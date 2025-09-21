@@ -83,60 +83,102 @@ bel-energy-portal/
 - **PostgreSQL** 15.0 o superior
 - **npm** 9.0.0 o superior
 
-### Instalación
+### Instalación Local
 
 1. **Clonar el repositorio**
-   ```bash
-   git clone https://github.com/your-org/bel-energy-portal.git
-   cd bel-energy-portal
-   ```
+    ```bash
+    git clone https://github.com/rubenbolivar/bailab.dev-bel-energy.git
+    cd bel-energy-portal
+    ```
 
 2. **Instalar dependencias**
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 
 3. **Configurar base de datos**
-   ```bash
-   # Crear base de datos PostgreSQL
-   createdb belenergydb
+    ```bash
+    # Crear base de datos PostgreSQL
+    createdb belenergydb
 
-   # Crear usuario
-   psql -d belenergydb -c "CREATE USER belenergy WITH PASSWORD 'belenergy';"
-   psql -d belenergydb -c "GRANT ALL PRIVILEGES ON DATABASE belenergydb TO belenergy;"
-   ```
+    # Crear usuario
+    psql -d belenergydb -c "CREATE USER belenergy WITH PASSWORD 'belenergy';"
+    psql -d belenergydb -c "GRANT ALL PRIVILEGES ON DATABASE belenergydb TO belenergy;"
+    ```
 
 4. **Configurar variables de entorno**
 
-   Copiar archivos de ejemplo:
-   ```bash
-   cp packages/database/.env.example packages/database/.env
-   cp apps/api/.env.example apps/api/.env
-   cp apps/web/.env.local.example apps/web/.env.local
-   ```
+    Copiar archivos de ejemplo:
+    ```bash
+    cp packages/database/.env.example packages/database/.env
+    cp apps/api/.env.example apps/api/.env
+    cp apps/web/.env.local.example apps/web/.env.local
+    ```
 
 5. **Inicializar base de datos**
-   ```bash
-   cd packages/database
-   npm run db:push
-   npm run db:seed
-   ```
+    ```bash
+    cd packages/database
+    npm run db:push
+    npm run db:seed
+    ```
 
 6. **Iniciar servicios**
-   ```bash
-   # Terminal 1: Backend API
-   cd apps/api && npm run dev
+    ```bash
+    # Terminal 1: Backend API
+    cd apps/api && npm run dev
 
-   # Terminal 2: Frontend Web
-   cd apps/web && npm run dev
-   ```
+    # Terminal 2: Frontend Web
+    cd apps/web && npm run dev
+    ```
 
 7. **Acceder a la aplicación**
-   - **Frontend**: http://localhost:3000
-   - **Backend API**: http://localhost:3001
-   - **Dashboard Admin**: http://localhost:3000/admin/dashboard ✅ **FUNCIONANDO**
-   - **API Health Check**: http://localhost:3001/api/health
-   - **Homepage**: http://localhost:3000 (Portal público)
+    - **Frontend**: http://localhost:3000
+    - **Backend API**: http://localhost:3001
+    - **Dashboard Admin**: http://localhost:3000/admin/dashboard ✅ **FUNCIONANDO**
+    - **Aliados Dashboard**: http://localhost:3000/aliados/dashboard ✅ **FUNCIONANDO**
+    - **API Health Check**: http://localhost:3001/api/health
+    - **Homepage**: http://localhost:3000 (Portal público)
+
+### 🚀 Despliegue en Producción
+
+#### Opción 1: Despliegue Automático (Recomendado)
+```bash
+# Configurar SSH keys
+./setup_vps.sh
+
+# Ejecutar despliegue completo
+./deploy.sh
+```
+
+#### Opción 2: Configuración Manual
+Ejecuta los comandos del script `deploy_manual.sh` en tu VPS:
+
+```bash
+# Conectar al VPS
+ssh root@203.161.62.94
+
+# Ejecutar el script manual
+./deploy_manual.sh
+```
+
+#### URLs de Producción
+- **Frontend**: https://bel-energy.bailab.dev
+- **API**: https://bel-energy.bailab.dev/api
+- **Admin Dashboard**: https://bel-energy.bailab.dev/admin/dashboard
+- **Aliados Dashboard**: https://bel-energy.bailab.dev/aliados/dashboard
+
+#### Gestión de Producción
+```bash
+# Verificar servicios
+pm2 status
+pm2 logs
+
+# Reiniciar servicios
+pm2 restart all
+
+# Ver logs de Nginx
+systemctl status nginx
+```
 
 ## 📚 Documentación de APIs
 
