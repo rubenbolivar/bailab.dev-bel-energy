@@ -1,0 +1,388 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Usuarios base
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String?  // Hashed password
+  phone       String?
+  firstName   String
+  lastName    String
+  userType    UserType @default(CLIENTE)
+  status      UserStatus @default(ACTIVO)
+  belScore    Int?     // 0-1000, null si no evaluado
+  referralCode String  @unique
+  referredBy  String?
+  location    Json?    // {state, city, address}
+  preferences Json?    // {language, currency, notifications}
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  cliente     Cliente?
+  aliado      Aliado?
+  transacciones Transaccion[]
+  notificaciones Notificacion[]
+  referidos   User[]   @relation("UserReferrals")
+  referente   User?    @relation("UserReferrals", fields: [referredBy], references: [id])
+}
+
+model Cliente {
+  id               String @id @default(cuid())
+  userId           String @unique
+  customerType     CustomerType
+  companyName      String?
+  taxId            String?
+  consumptionProfile Json? // {monthlyKwh, peakHours, appliances[]}
+  financingProfile   Json? // {incomeRange, employmentType, creditHistory}
+
+  user       User        @relation(fields: [userId], references: [id])
+  proyectos  Proyecto[]
+}
+
+model Aliado {
+  id                String @id @default(cuid())
+  userId            String @unique
+  professionalType  ProfessionalType
+  licenseNumber     String?
+  certifications    Json[] // Array de certificaciones
+  serviceAreas      String[] // Ciudades/estados que cubre
+  specializations   Specialization[]
+  rating            Float  @default(0)
+  projectsCompleted Int    @default(0)
+  academyLevel      AcademyLevel @default(BASICO)
+  commissionRate    Float
+  availabilityStatus AvailabilityStatus @default(DISPONIBLE)
+  portfolio         Json?  // {description, images, certifications}
+
+  user      User        @relation(fields: [userId], references: [id])
+  proyectos Proyecto[]
+}
+
+model Producto {
+  id                String @id @default(cuid())
+  sku               String @unique
+  name              String
+  category          ProductCategory
+  description       String
+  specifications    Json   // Specs técnicas flexibles
+  images            String[]
+  priceUSD          Float
+  priceWithFinancing Float
+  installments      Int    @default(4)
+  warrantyYears     Int
+  targetAudience    String[]
+  stockQuantity     Int
+  minOrderQuantity  Int    @default(1)
+  compatibleProducts String[] // IDs de productos compatibles
+  installationRequired Boolean @default(true)
+  diyDifficulty     DifficultyLevel?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relaciones
+  proyectoItems ProyectoItem[]
+}
+
+model Proyecto {
+  id              String @id @default(cuid())
+  clienteId       String
+  aliladoId       String?
+  projectType     ProjectType
+  status          ProjectStatus @default(COTIZADO)
+  financingType   FinancingType
+  totalAmount     Float
+  paymentStatus   PaymentStatus @default(PENDIENTE)
+  installationDate DateTime?
+  completionDate   DateTime?
+  technicalRequirements String?
+  notes           String?
+  documents       String[] // URLs
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  cliente       Cliente @relation(fields: [clienteId], references: [id])
+  aliado        Aliado? @relation(fields: [aliladoId], references: [id])
+  items         ProyectoItem[]
+  cotizaciones  Cotizacion[]
+  transacciones Transaccion[]
+}
+
+model ProyectoItem {
+  id         String @id @default(cuid())
+  proyectoId String
+  productoId String
+  quantity   Int
+  unitPrice  Float
+
+  proyecto   Proyecto @relation(fields: [proyectoId], references: [id])
+  producto   Producto @relation(fields: [productoId], references: [id])
+}
+
+model Cotizacion {
+  id                String @id @default(cuid())
+  proyectoId        String
+  generatedBy       String // 'calculadora', 'aliado', 'admin'
+  consumptionAnalysis Json // {monthlyKwh, recommendedCapacity, savingsProjection}
+  productsRecommended Json[]
+  installationCost  Float  @default(0)
+  totalInvestment   Float
+  financingOptions  Json[] // Array de opciones de financiamiento
+  validUntil        DateTime
+  status            QuoteStatus @default(DRAFT)
+  createdAt         DateTime @default(now())
+
+  proyecto   Proyecto @relation(fields: [proyectoId], references: [id])
+}
+
+model Transaccion {
+  id                    String @id @default(cuid())
+  userId                String
+  proyectoId            String?
+  gatewayTransactionId  String?
+  paymentGateway        String
+  amount                Float
+  currency              String
+  exchangeRate          Float?
+  status                TransactionStatus
+  paymentMethod         String
+  fees                  Float   @default(0)
+  metadata              Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id])
+  proyecto Proyecto? @relation(fields: [proyectoId], references: [id])
+}
+
+// Academia y contenido educativo
+
+model AcademiaContenido {
+  id              String @id @default(cuid())
+  title           String
+  category        ContentCategory
+  contentType     ContentType
+  level           ContentLevel
+  durationMinutes Int?
+  prerequisites   String[] // IDs de contenido prerrequisito
+  contentUrl      String
+  description     String
+  tags            String[]
+  isPremium       Boolean @default(false)
+  certificationPoints Int @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  progreso ProgresoAcademia[]
+}
+
+model ProgresoAcademia {
+  id                String @id @default(cuid())
+  userId            String
+  contenidoId       String
+  status            ProgressStatus @default(NO_INICIADO)
+  progressPercentage Int @default(0)
+  startedAt         DateTime?
+  completedAt       DateTime?
+  quizScore         Int?
+  timeSpentMinutes  Int @default(0)
+
+  contenido AcademiaContenido @relation(fields: [contenidoId], references: [id])
+
+  @@unique([userId, contenidoId])
+}
+
+// Enums
+
+enum UserType {
+  CLIENTE
+  ALIADO
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVO
+  INACTIVO
+  PENDIENTE
+}
+
+enum CustomerType {
+  RESIDENCIAL
+  COMERCIAL
+  INDUSTRIAL
+  AGRO
+}
+
+enum ProfessionalType {
+  INGENIERO
+  ARQUITECTO
+  CONSTRUCTOR
+  TECNICO
+}
+
+enum Specialization {
+  RESIDENCIAL
+  COMERCIAL
+  INDUSTRIAL
+  AGRO
+}
+
+enum AcademyLevel {
+  BASICO
+  INTERMEDIO
+  AVANZADO
+  EXPERTO
+}
+
+enum AvailabilityStatus {
+  DISPONIBLE
+  OCUPADO
+  INACTIVO
+}
+
+enum ProductCategory {
+  INVERSOR
+  BATERIA
+  PANEL
+  KIT_COMPLETO
+}
+
+enum DifficultyLevel {
+  FACIL
+  INTERMEDIO
+  DIFICIL
+  EXPERTO
+}
+
+enum ProjectType {
+  DIY
+  CON_INSTALACION
+}
+
+enum ProjectStatus {
+  COTIZADO
+  APROBADO
+  EN_PROCESO
+  INSTALADO
+  COMPLETADO
+  CANCELADO
+}
+
+enum FinancingType {
+  CONTADO
+  CUOTAS
+  BELCASH
+}
+
+enum PaymentStatus {
+  PENDIENTE
+  PARCIAL
+  COMPLETADO
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum ContentCategory {
+  BASICO
+  INSTALACION
+  MANTENIMIENTO
+  DIY
+  CERTIFICACION
+}
+
+enum ContentType {
+  VIDEO
+  ARTICULO
+  INFOGRAFIA
+  QUIZ
+  TUTORIAL
+}
+
+enum ContentLevel {
+  PRINCIPIANTE
+  INTERMEDIO
+  AVANZADO
+}
+
+enum ProgressStatus {
+  NO_INICIADO
+  EN_PROGRESO
+  COMPLETADO
+}
+
+// Calculadora Solar
+model CalculoSolar {
+  id                        String   @id @default(cuid())
+  ubicacion                 String
+  tipoEdificacion           String   @default("casa")
+  numeroPersonas            Int
+  consumoDiario             Float    @default(0)
+  horasUsoDiario            Float    @default(0)
+  electrodomesticos         String   // JSON string
+  horasAutonomia            Int
+  frecuenciaApagones        String
+  prioridadRespaldo         String
+  energiaDiariaNecesaria    Float
+  energiaMensualNecesaria   Float
+  potenciaPico              Float
+  panelesRecomendados       Int
+  bateriaRecomendada        Int
+  inversorRecomendado       String
+  costoEstimado             Float
+  fechaCalculo              DateTime @default(now())
+}
+
+// Notificaciones del sistema
+model Notificacion {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  category  NotificationCategory
+  metadata  Json?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum NotificationCategory {
+  PROJECT
+  PAYMENT
+  SYSTEM
+  ACADEMY
+  ALIADO
+}
