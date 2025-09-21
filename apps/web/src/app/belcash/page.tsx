@@ -145,7 +145,7 @@ export default function BelCashPage() {
 
         {/* User ID Input */}
         <Card className="mb-8">
-          <CardHeader>
+          <CardHeader className="">
             <CardTitle>Información del Usuario</CardTitle>
             <CardDescription>
               Ingresa tu ID de usuario para acceder a tu perfil BelCash
