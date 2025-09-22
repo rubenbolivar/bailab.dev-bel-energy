@@ -14,27 +14,25 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 export * from '@prisma/client'
 
-// Export custom enums from Prisma schema as both types and values
-export {
-  UserType,
-  UserStatus,
-  CustomerType,
-  ProfessionalType,
-  Specialization,
-  AcademyLevel,
-  AvailabilityStatus,
-  ProductCategory,
-  DifficultyLevel,
-  ProjectType,
-  ProjectStatus,
-  FinancingType,
-  PaymentStatus,
-  QuoteStatus,
-  TransactionStatus,
-  ContentCategory,
-  ContentType,
-  ContentLevel,
-  ProgressStatus,
-  NotificationType,
-  NotificationCategory
-} from '@prisma/client'
+// Re-export enums from generated Prisma client
+export { UserType } from '@prisma/client'
+export { UserStatus } from '@prisma/client'
+export { CustomerType } from '@prisma/client'
+export { ProfessionalType } from '@prisma/client'
+export { Specialization } from '@prisma/client'
+export { AcademyLevel } from '@prisma/client'
+export { AvailabilityStatus } from '@prisma/client'
+export { ProductCategory } from '@prisma/client'
+export { DifficultyLevel } from '@prisma/client'
+export { ProjectType } from '@prisma/client'
+export { ProjectStatus } from '@prisma/client'
+export { FinancingType } from '@prisma/client'
+export { PaymentStatus } from '@prisma/client'
+export { QuoteStatus } from '@prisma/client'
+export { TransactionStatus } from '@prisma/client'
+export { ContentCategory } from '@prisma/client'
+export { ContentType } from '@prisma/client'
+export { ContentLevel } from '@prisma/client'
+export { ProgressStatus } from '@prisma/client'
+export { NotificationType } from '@prisma/client'
+export { NotificationCategory } from '@prisma/client'
