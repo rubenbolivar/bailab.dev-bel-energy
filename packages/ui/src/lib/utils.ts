@@ -1,4 +1,3 @@
-export function cn() {
-  const classes = Array.prototype.slice.call(arguments).filter(Boolean)
-  return classes.join(" ")
+export function cn(...classes: (string | undefined | null | false)[]): string {
+  return classes.filter(Boolean).join(" ")
 }
