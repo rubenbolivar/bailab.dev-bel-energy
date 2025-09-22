@@ -20,11 +20,12 @@ export default function Home() {
       <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm shadow-sm z-50 border-b border-gray-100">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">BE</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">Bel Energy</span>
+            <div className="flex items-center space-x-3">
+              <img
+                src="/images/Logo Bel Energy Full Color.png"
+                alt="Bel Energy Logo"
+                className="h-12 w-auto"
+              />
             </div>
 
             <div className="hidden md:flex space-x-8">

@@ -451,6 +451,14 @@ export default function CalculadoraPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <img
+              src="/images/Logo Bel Energy Full Color.png"
+              alt="Bel Energy Logo"
+              className="h-16 w-auto"
+            />
+          </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             🏠 Calculadora Solar Bel Energy
           </h1>

@@ -1,0 +1,29 @@
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="200" height="60" rx="8" fill="url(#gradient)"/>
+
+  <!-- Sun icon -->
+  <circle cx="25" cy="30" r="12" fill="#FFD700"/>
+  <g stroke="#FFA500" stroke-width="2" fill="none">
+    <line x1="25" y1="12" x2="25" y2="18"/>
+    <line x1="25" y1="42" x2="25" y2="48"/>
+    <line x1="7" y1="30" x2="13" y2="30"/>
+    <line x1="37" y1="30" x2="43" y2="30"/>
+    <line x1="15" y1="20" x2="19" y2="24"/>
+    <line x1="31" y1="36" x2="35" y2="40"/>
+    <line x1="15" y1="40" x2="19" y2="36"/>
+    <line x1="31" y1="24" x2="35" y2="20"/>
+  </g>
+
+  <!-- Text -->
+  <text x="50" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1F2937">Bel Energy</text>
+  <text x="50" y="42" font-family="Arial, sans-serif" font-size="12" fill="#6B7280">Energía Sostenible</text>
+
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#10B981;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>
