@@ -52,7 +52,7 @@ router.post('/guardar', async (req, res) => {
     const calculo = await prisma.calculoSolar.create({
       data: {
         ubicacion: datos.ubicacion,
-        tipoEdificacion: datos.tipoEdificacion,
+        tipoEdificacion: datos.tipoVivienda,
         numeroPersonas: datos.numeroPersonas,
         consumoDiario: datos.consumoDiario,
         horasUsoDiario: datos.horasUsoDiario,

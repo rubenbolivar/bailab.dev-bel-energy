@@ -106,7 +106,7 @@ export class CalculatorController {
 
       // Aquí podríamos obtener el historial de cálculos del usuario
       // Por ahora retornamos un array vacío
-      const history = []
+      const history: any[] = []
 
       res.json({
         success: true,
