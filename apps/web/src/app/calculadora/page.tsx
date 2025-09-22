@@ -45,12 +45,13 @@ interface ResultadoCalculo {
     cantidades: {
       paneles: number
       baterias: number
+      bateriasAdicionales?: number
     }
   }
 }
 
 const UBICACIONES_VENEZUELA = [
-  { id: 'caracas', nombre: 'Caracas', irradiacion: 5.2, factor: 1.0 },
+  { id: 'caracas', nombre: 'Caracas', irradiacion: 5.2, factor: 1.0 }, // kWh/m²/día
   { id: 'maracaibo', nombre: 'Maracaibo', irradiacion: 5.8, factor: 1.1 },
   { id: 'valencia', nombre: 'Valencia', irradiacion: 4.9, factor: 0.95 },
   { id: 'barquisimeto', nombre: 'Barquisimeto', irradiacion: 5.4, factor: 1.05 },
@@ -85,48 +86,42 @@ const tieneEquipos220V = (electrodomesticos: any[]) => {
   )
 }
 
-// Productos Bel Energy Catatumbo - Información real del catálogo
+// Productos Bel Energy Catatumbo - Información REAL del catálogo oficial
 const PRODUCTOS_BEL_ENERGY = {
   inversores: [
     {
       modelo: 'CATATUMBO CB-3000W',
       potencia: 3000, // W
-      precioCompraDirecta: 1481, // USD
+      precioCompraDirecta: 1481, // USD - INCLUYE BATERÍA CB-LP1624100
       precioGeneral: 2221, // USD
       maxPaneles: 2500, // W
-      bateriaRecomendada: 'CB-LP1624100',
+      bateriaIncluida: {
+        modelo: 'CB-LP1624100',
+        capacidad: 2560, // Wh
+        voltaje: 25.6 // V
+      },
       voltajeSalida: '110/120 VAC',
       arranqueMotor: '1.5 HP',
-      descripcion: 'Inversor 3000W con cargador 40A, onda sinusoidal pura - 110/120V'
+      descripcion: 'Inversor 3000W con cargador 40A, batería incluida - 110/120V'
     },
     {
       modelo: 'CATATUMBO CB-6000W',
       potencia: 6000, // W
-      precioCompraDirecta: 2700, // USD
+      precioCompraDirecta: 2700, // USD - INCLUYE BATERÍA CB-LP1648200
       precioGeneral: 4050, // USD
       maxPaneles: 5000, // W
-      bateriaRecomendada: 'CB-LP1648200',
+      bateriaIncluida: {
+        modelo: 'CB-LP1648200',
+        capacidad: 10240, // Wh
+        voltaje: 51.2 // V
+      },
       voltajeSalida: '110/120-220/240 VAC',
       arranqueMotor: '3 HP',
-      descripcion: 'Inversor 6000W con cargador 40A, onda sinusoidal pura - 110/120/220/240V'
+      descripcion: 'Inversor 6000W con cargador 40A, batería incluida - 110/120/220/240V'
     }
   ],
-  baterias: [
-    {
-      modelo: 'CB-LP1624100',
-      capacidad: 2560, // Wh
-      voltaje: 25.6, // V
-      precioCompraDirecta: Math.round(800 * 0.6), // 60% = 480 USD
-      descripcion: 'Batería LiFePO4 2560Wh, 6000 ciclos de vida'
-    },
-    {
-      modelo: 'CB-LP1648200',
-      capacidad: 10240, // Wh
-      voltaje: 51.2, // V
-      precioCompraDirecta: Math.round(3200 * 0.6), // 60% = 1920 USD
-      descripcion: 'Batería LiFePO4 10240Wh, 6000 ciclos de vida'
-    }
-  ],
+  // Baterías ADICIONALES - Precio = 60% del valor del sistema completo
+  precioBateriaAdicional: (precioSistema: number) => precioSistema * 0.6,
   paneles: [
     {
       modelo: 'CATATUMBO CB-41V 620W',
@@ -163,16 +158,16 @@ const getElectrodomesticosPorTipo = (tipoEdificacion: string) => {
     { nombre: 'Aire Acondicionado Split 12000 BTU', potencia: 1200, horasUso: 8, categoria: 'climatizacion' },
     { nombre: 'Aire Acondicionado Split 18000 BTU', potencia: 1800, horasUso: 8, categoria: 'climatizacion' },
     { nombre: 'Aire Acondicionado Split 24000 BTU', potencia: 2400, horasUso: 8, categoria: 'climatizacion' },
-    { nombre: 'Computadora de Escritorio', potencia: 300, horasUso: 8, categoria: 'computacion' },
+    { nombre: 'Computadora de Escritorio', potencia: 250, horasUso: 8, categoria: 'computacion' }, // 250W promedio
     { nombre: 'Laptop', potencia: 65, horasUso: 8, categoria: 'computacion' },
-    { nombre: 'Impresora', potencia: 500, horasUso: 2, categoria: 'oficina' },
-    { nombre: 'Fotocopiadora', potencia: 1500, horasUso: 4, categoria: 'oficina' },
+    { nombre: 'Impresora', potencia: 300, horasUso: 2, categoria: 'oficina' }, // 300W promedio
+    { nombre: 'Fotocopiadora', potencia: 1200, horasUso: 4, categoria: 'oficina' }, // 1200W en uso
     { nombre: 'Router WiFi', potencia: 15, horasUso: 24, categoria: 'redes' },
-    { nombre: 'Servidor', potencia: 500, horasUso: 24, categoria: 'servidores' },
-    { nombre: 'Cafetera Eléctrica', potencia: 800, horasUso: 4, categoria: 'cocina' },
+    { nombre: 'Servidor', potencia: 400, horasUso: 24, categoria: 'servidores' }, // 400W promedio
+    { nombre: 'Cafetera Eléctrica', potencia: 600, horasUso: 4, categoria: 'cocina' }, // 600W cafetera
     { nombre: 'Microondas', potencia: 1000, horasUso: 1, categoria: 'cocina' },
-    { nombre: 'Refrigerador Ejecutivo', potencia: 200, horasUso: 24, categoria: 'refrigeracion' },
-    { nombre: 'Iluminación LED', potencia: 30, horasUso: 10, categoria: 'iluminacion' },
+    { nombre: 'Refrigerador Ejecutivo', potencia: 180, horasUso: 24, categoria: 'refrigeracion' }, // 180W promedio
+    { nombre: 'Iluminación LED', potencia: 25, horasUso: 10, categoria: 'iluminacion' }, // 25W por bombillo
     { nombre: 'Ventilador de Techo', potencia: 100, horasUso: 8, categoria: 'climatizacion' },
     { nombre: 'Aire Acondicionado Central', potencia: 3000, horasUso: 8, categoria: 'climatizacion' }
   ]
@@ -181,19 +176,19 @@ const getElectrodomesticosPorTipo = (tipoEdificacion: string) => {
     { nombre: 'Aire Acondicionado Comercial 18000 BTU', potencia: 1800, horasUso: 12, categoria: 'climatizacion' },
     { nombre: 'Aire Acondicionado Comercial 24000 BTU', potencia: 2400, horasUso: 12, categoria: 'climatizacion' },
     { nombre: 'Aire Acondicionado Comercial 36000 BTU', potencia: 3600, horasUso: 12, categoria: 'climatizacion' },
-    { nombre: 'Refrigerador Comercial', potencia: 800, horasUso: 24, categoria: 'refrigeracion' },
-    { nombre: 'Congelador Comercial', potencia: 1000, horasUso: 24, categoria: 'refrigeracion' },
-    { nombre: 'Horno Industrial', potencia: 3000, horasUso: 6, categoria: 'cocina' },
-    { nombre: 'Plancha Industrial', potencia: 2000, horasUso: 4, categoria: 'cocina' },
-    { nombre: 'Licuadora Industrial', potencia: 800, horasUso: 2, categoria: 'cocina' },
-    { nombre: 'Cafetera Industrial', potencia: 1500, horasUso: 8, categoria: 'cocina' },
+    { nombre: 'Refrigerador Comercial', potencia: 600, horasUso: 24, categoria: 'refrigeracion' }, // 600W promedio
+    { nombre: 'Congelador Comercial', potencia: 800, horasUso: 24, categoria: 'refrigeracion' }, // 800W promedio
+    { nombre: 'Horno Industrial', potencia: 2500, horasUso: 6, categoria: 'cocina' }, // 2500W en uso
+    { nombre: 'Plancha Industrial', potencia: 1500, horasUso: 4, categoria: 'cocina' }, // 1500W plancha
+    { nombre: 'Licuadora Industrial', potencia: 600, horasUso: 2, categoria: 'cocina' }, // 600W licuadora
+    { nombre: 'Cafetera Industrial', potencia: 1200, horasUso: 8, categoria: 'cocina' }, // 1200W cafetera industrial
     { nombre: 'Computadora POS', potencia: 150, horasUso: 12, categoria: 'punto_venta' },
-    { nombre: 'Sistema de Punto de Venta', potencia: 300, horasUso: 12, categoria: 'punto_venta' },
-    { nombre: 'Iluminación LED Comercial', potencia: 50, horasUso: 12, categoria: 'iluminacion' },
-    { nombre: 'Ventilador Industrial', potencia: 200, horasUso: 12, categoria: 'climatizacion' },
-    { nombre: 'Máquina de Helados', potencia: 600, horasUso: 8, categoria: 'equipos_especiales' },
-    { nombre: 'Exprimidor Industrial', potencia: 400, horasUso: 4, categoria: 'cocina' },
-    { nombre: 'Batidora Industrial', potencia: 800, horasUso: 3, categoria: 'cocina' }
+    { nombre: 'Sistema de Punto de Venta', potencia: 250, horasUso: 12, categoria: 'punto_venta' }, // 250W sistema POS
+    { nombre: 'Iluminación LED Comercial', potencia: 40, horasUso: 12, categoria: 'iluminacion' }, // 40W por bombillo
+    { nombre: 'Ventilador Industrial', potencia: 150, horasUso: 12, categoria: 'climatizacion' }, // 150W ventilador industrial
+    { nombre: 'Máquina de Helados', potencia: 500, horasUso: 8, categoria: 'equipos_especiales' }, // 500W máquina de helados
+    { nombre: 'Exprimidor Industrial', potencia: 300, horasUso: 4, categoria: 'cocina' }, // 300W exprimidor
+    { nombre: 'Batidora Industrial', potencia: 600, horasUso: 3, categoria: 'cocina' } // 600W batidora
   ]
 
   switch (tipoEdificacion) {
@@ -232,17 +227,51 @@ export default function CalculadoraPage() {
   }
 
   const agregarElectrodomestico = (electrodomestico: Electrodomestico) => {
-    setDatos(prev => ({
-      ...prev,
-      electrodomesticos: [...prev.electrodomesticos, electrodomestico]
-    }))
+    setDatos(prev => {
+      // Verificar si ya existe este electrodoméstico
+      const existente = prev.electrodomesticos.find(e =>
+        e.nombre === electrodomestico.nombre &&
+        e.potencia === electrodomestico.potencia &&
+        e.horasUso === electrodomestico.horasUso
+      )
+
+      if (existente) {
+        // Si existe, incrementar la cantidad
+        return {
+          ...prev,
+          electrodomesticos: prev.electrodomesticos.map(e =>
+            e === existente ? { ...e, cantidad: e.cantidad + 1 } : e
+          )
+        }
+      } else {
+        // Si no existe, agregar nuevo
+        return {
+          ...prev,
+          electrodomesticos: [...prev.electrodomesticos, electrodomestico]
+        }
+      }
+    })
   }
 
   const removerElectrodomestico = (index: number) => {
-    setDatos(prev => ({
-      ...prev,
-      electrodomesticos: prev.electrodomesticos.filter((_, i) => i !== index)
-    }))
+    setDatos(prev => {
+      const electro = prev.electrodomesticos[index]
+      if (electro.cantidad > 1) {
+        // Si hay más de 1, decrementar cantidad
+        return {
+          ...prev,
+          electrodomesticos: prev.electrodomesticos.map((e, i) =>
+            i === index ? { ...e, cantidad: e.cantidad - 1 } : e
+          )
+        }
+      } else {
+        // Si hay solo 1, eliminar completamente
+        return {
+          ...prev,
+          electrodomesticos: prev.electrodomesticos.filter((_, i) => i !== index)
+        }
+      }
+    })
   }
 
   const calcularConsumoTotal = () => {
@@ -262,10 +291,16 @@ export default function CalculadoraPage() {
       const consumoDiario = calcularConsumoTotal()
       const energiaMensual = consumoDiario * 30 * factorUbicacion
 
-      // Cálculos basados en productos Bel Energy Catatumbo
-      const eficienciaSistema = 0.85 // 85% eficiencia total del sistema
-      const energiaDiariaNecesaria = consumoDiario / eficienciaSistema
-      const energiaDiariaConAutonomia = energiaDiariaNecesaria * (datos.horasAutonomia / irradiacionDiaria)
+      // Cálculos CORREGIDOS basados en productos Bel Energy Catatumbo
+      const eficienciaSistema = 0.85 // 85% eficiencia total del sistema (incluye pérdidas por cables, inversor, temperatura, etc.)
+      const energiaDiariaNecesaria = consumoDiario / eficienciaSistema // Energía que deben generar los paneles (Wh/día)
+
+      // CORRECCIÓN CRÍTICA: Cálculo correcto de capacidad de paneles
+      // Fórmula: Capacidad(kW) = Energía necesaria diaria(kWh) / Irradiación diaria(kWh/m²/día)
+      // Un panel de 1kW produce irradiación kWh por día en esa ubicación
+      const energiaDiariaKWh = energiaDiariaNecesaria / 1000 // Convertir Wh a kWh
+      const capacidadPanelesNecesariaKW = energiaDiariaKWh / irradiacionDiaria // kW de capacidad instalada necesaria
+      const capacidadPanelesNecesaria = capacidadPanelesNecesariaKW * 1000 // Convertir kW a W
 
       const potenciaPico = Math.max(...datos.electrodomesticos.map(e => e.potencia * e.cantidad))
 
@@ -285,7 +320,7 @@ export default function CalculadoraPage() {
 
       // Calcular paneles necesarios (620W cada uno)
       const panel620W = PRODUCTOS_BEL_ENERGY.paneles[0]
-      let panelesRecomendados = Math.ceil(energiaDiariaConAutonomia / panel620W.potencia)
+      let panelesRecomendados = Math.ceil(capacidadPanelesNecesaria / panel620W.potencia)
 
       // Asegurar mínimo de paneles para un sistema viable
       panelesRecomendados = Math.max(panelesRecomendados, 2)
@@ -294,27 +329,34 @@ export default function CalculadoraPage() {
       const maxPanelesPorInversor = Math.floor(inversorSeleccionado.maxPaneles / panel620W.potencia)
       panelesRecomendados = Math.min(panelesRecomendados, maxPanelesPorInversor)
 
-      // Seleccionar batería apropiada
-      let bateriaSeleccionada
-      const energiaBateriaNecesaria = energiaDiariaNecesaria * datos.horasAutonomia
+      // CORRECCIÓN CRÍTICA: Calcular capacidad de batería correctamente
+      // Fórmula: Capacidad batería(Wh) = (Energía diaria necesaria × Horas autonomía) ÷ 24 × Factor de seguridad
+      // Factor de seguridad 1.25 considera descarga al 80% y pérdidas del sistema
+      const energiaBateriaNecesaria = ((energiaDiariaNecesaria * datos.horasAutonomia) / 24) * 1.25
 
-      if (energiaBateriaNecesaria <= 2560) {
-        bateriaSeleccionada = PRODUCTOS_BEL_ENERGY.baterias[0] // CB-LP1624100
-      } else {
-        bateriaSeleccionada = PRODUCTOS_BEL_ENERGY.baterias[1] // CB-LP1648200
-      }
+      // Seleccionar batería apropiada - usar la incluida en el inversor seleccionado
+      // Los inversores vienen con batería incluida, baterías adicionales cuestan 60% del sistema
+      const bateriaIncluida = inversorSeleccionado.bateriaIncluida
 
-      // Calcular baterías necesarias
-      let bateriasRecomendadas = Math.ceil(energiaBateriaNecesaria / bateriaSeleccionada.capacidad)
-      bateriasRecomendadas = Math.max(bateriasRecomendadas, 1)
+      // Calcular baterías TOTALES necesarias (incluida + adicionales)
+      let bateriasTotales = Math.ceil(energiaBateriaNecesaria / bateriaIncluida.capacidad)
+      bateriasTotales = Math.max(bateriasTotales, 1)
 
-      // Calcular costo total usando precios de compra directa
+      // Baterías adicionales (más allá de la incluida)
+      const bateriasAdicionales = Math.max(bateriasTotales - 1, 0)
+
+      // Calcular costo total usando precios REALES de Bel Energy
       const costoPaneles = panelesRecomendados * panel620W.precioCompraDirecta
-      const costoBaterias = bateriasRecomendadas * bateriaSeleccionada.precioCompraDirecta
-      const costoInversor = inversorSeleccionado.precioCompraDirecta
+      const costoInversor = inversorSeleccionado.precioCompraDirecta // Incluye 1 batería
+
+      // Baterías adicionales cuestan 60% del precio del sistema completo
+      const costoBateriasAdicionales = bateriasAdicionales > 0
+        ? PRODUCTOS_BEL_ENERGY.precioBateriaAdicional(inversorSeleccionado.precioCompraDirecta) * bateriasAdicionales
+        : 0
+
       const costoInstalacion = 300 // Costo aproximado de instalación
 
-      const costoEstimado = costoPaneles + costoBaterias + costoInversor + costoInstalacion
+      const costoEstimado = costoPaneles + costoInversor + costoBateriasAdicionales + costoInstalacion
 
       const resultado: ResultadoCalculo = {
         energiaDiariaNecesaria,
@@ -322,18 +364,19 @@ export default function CalculadoraPage() {
         potenciaPico,
         horasAutonomia: datos.horasAutonomia,
         panelesRecomendados,
-        bateriaRecomendada: bateriasRecomendadas,
+        bateriaRecomendada: bateriasTotales,
         inversorRecomendado: inversorSeleccionado.modelo,
         costoEstimado,
         ahorroAnual: 0, // No enfatizar ahorros económicos en Venezuela
         roi: 0,
         productosDetallados: {
           inversor: inversorSeleccionado,
-          bateria: bateriaSeleccionada,
+          bateria: bateriaIncluida,
           panel: panel620W,
           cantidades: {
             paneles: panelesRecomendados,
-            baterias: bateriasRecomendadas
+            baterias: bateriasTotales,
+            bateriasAdicionales: bateriasAdicionales
           }
         }
       }
@@ -549,6 +592,7 @@ export default function CalculadoraPage() {
                           <span className="font-medium">{electro.nombre}</span>
                           <span className="text-sm text-gray-600 ml-2">
                             {electro.potencia}W × {electro.horasUso}h × {electro.cantidad} = {(electro.potencia * electro.horasUso * electro.cantidad).toFixed(0)}Wh/día
+                            {electro.cantidad > 1 && <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">×{electro.cantidad}</span>}
                           </span>
                         </div>
                         <button
@@ -725,13 +769,13 @@ export default function CalculadoraPage() {
                           <div>
                             <div className="font-semibold text-gray-900">Independencia Eléctrica</div>
                             <div className="text-sm text-gray-600">
-                              {resultado.horasAutonomia === 2 ? 'Respaldo básico para emergencias cortas' :
-                               resultado.horasAutonomia === 4 ? 'Cobertura estándar para la mayoría de situaciones' :
-                               resultado.horasAutonomia === 6 ? 'Respaldo extendido para situaciones prolongadas' :
-                               resultado.horasAutonomia === 12 ? 'Medio día de autonomía garantizada' :
+                              {resultado.horasAutonomia === 2 ? 'Respaldo básico para emergencias cortas (2 horas)' :
+                               resultado.horasAutonomia === 4 ? 'Cobertura estándar para situaciones moderadas (4 horas)' :
+                               resultado.horasAutonomia === 6 ? 'Respaldo extendido para situaciones prolongadas (6 horas)' :
+                               resultado.horasAutonomia === 12 ? 'Medio día de autonomía garantizada (12 horas)' :
                                resultado.horasAutonomia === 24 ? 'Cobertura completa de 24 horas' :
-                               resultado.horasAutonomia === 48 ? 'Dos días de respaldo ininterrumpido' :
-                               'Tres días de autonomía máxima'}
+                               resultado.horasAutonomia === 48 ? 'Dos días de respaldo ininterrumpido (48 horas)' :
+                               'Tres días de autonomía máxima (72 horas)'}
                             </div>
                           </div>
                         </div>
@@ -742,11 +786,11 @@ export default function CalculadoraPage() {
                             <div className="font-semibold text-gray-900">Energía 24/7</div>
                             <div className="text-sm text-gray-600">
                               {resultado.horasAutonomia >= 72 ? 'Tres días de autonomía máxima para emergencias extremas' :
-                               resultado.horasAutonomia >= 48 ? 'Dos días de respaldo ininterrumpido' :
-                               resultado.horasAutonomia >= 24 ? 'Cobertura completa de 24 horas' :
+                               resultado.horasAutonomia >= 48 ? 'Dos días de respaldo ininterrumpido para situaciones críticas' :
+                               resultado.horasAutonomia >= 24 ? 'Cobertura completa de 24 horas para respaldo diario' :
                                resultado.horasAutonomia >= 12 ? 'Medio día de autonomía garantizada' :
                                resultado.horasAutonomia >= 6 ? 'Respaldo extendido para situaciones prolongadas' :
-                               resultado.horasAutonomia >= 4 ? 'Cobertura estándar para la mayoría de situaciones' :
+                               resultado.horasAutonomia >= 4 ? 'Cobertura estándar para situaciones moderadas' :
                                'Respaldo básico para emergencias cortas'}
                             </div>
                           </div>
@@ -795,6 +839,9 @@ export default function CalculadoraPage() {
                             <p className="text-blue-800 text-sm mb-2">
                               {resultado.productosDetallados.inversor.descripcion}
                             </p>
+                            <div className="text-xs text-blue-600 bg-blue-100 p-2 rounded mb-2">
+                              🔋 Incluye batería {resultado.productosDetallados.bateria.modelo} ({resultado.productosDetallados.bateria.capacidad.toLocaleString()}Wh)
+                            </div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-blue-700">
                               <div>• Potencia: {resultado.productosDetallados.inversor.potencia}W</div>
                               <div>• Voltaje: {resultado.productosDetallados.inversor.voltajeSalida}</div>
@@ -834,20 +881,23 @@ export default function CalculadoraPage() {
                           <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
                             <div className="flex items-center justify-between mb-2">
                               <h4 className="font-bold text-green-900 text-lg">
-                                🔋 {resultado.productosDetallados.bateria.modelo}
+                                🔋 Sistema de Baterías
                               </h4>
                               <span className="text-2xl font-bold text-green-900">
-                                ${resultado.productosDetallados.bateria.precioCompraDirecta.toLocaleString()} × {resultado.productosDetallados.cantidades.baterias}
+                                {resultado.productosDetallados.cantidades.baterias} × {resultado.productosDetallados.bateria.modelo}
                               </span>
                             </div>
                             <p className="text-green-800 text-sm mb-2">
                               {resultado.productosDetallados.bateria.descripcion}
                             </p>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-green-700">
-                              <div>• Capacidad: {resultado.productosDetallados.bateria.capacidad.toLocaleString()}Wh</div>
+                              <div>• Capacidad unitaria: {resultado.productosDetallados.bateria.capacidad.toLocaleString()}Wh</div>
                               <div>• Voltaje: {resultado.productosDetallados.bateria.voltaje}V</div>
                               <div>• Ciclos: 6000</div>
-                              <div>• Total: {(resultado.productosDetallados.bateria.capacidad * resultado.productosDetallados.cantidades.baterias).toLocaleString()}Wh</div>
+                              <div>• Capacidad total: {(resultado.productosDetallados.bateria.capacidad * resultado.productosDetallados.cantidades.baterias).toLocaleString()}Wh</div>
+                            </div>
+                            <div className="mt-2 text-xs text-green-600 bg-green-100 p-2 rounded">
+                              💡 1 batería incluida en el sistema • Baterías adicionales: 60% del precio del sistema
                             </div>
                           </div>
 
@@ -858,16 +908,21 @@ export default function CalculadoraPage() {
                             </h4>
                             <div className="space-y-2 text-sm">
                               <div className="flex justify-between">
-                                <span>Inversor {resultado.productosDetallados.inversor.modelo}:</span>
+                                <span>Sistema {resultado.productosDetallados.inversor.modelo}:</span>
                                 <span className="font-semibold">${resultado.productosDetallados.inversor.precioCompraDirecta.toLocaleString()}</span>
                               </div>
+                              <div className="text-xs text-purple-600 ml-4">
+                                Incluye inversor + 1 batería {resultado.productosDetallados.bateria.modelo}
+                              </div>
+                              {(resultado.productosDetallados.cantidades.bateriasAdicionales || 0) > 0 && (
+                                <div className="flex justify-between">
+                                  <span>{resultado.productosDetallados.cantidades.bateriasAdicionales} Batería(s) adicional(es):</span>
+                                  <span className="font-semibold">${(PRODUCTOS_BEL_ENERGY.precioBateriaAdicional(resultado.productosDetallados.inversor.precioCompraDirecta) * (resultado.productosDetallados.cantidades.bateriasAdicionales || 0)).toLocaleString()}</span>
+                                </div>
+                              )}
                               <div className="flex justify-between">
                                 <span>{resultado.productosDetallados.cantidades.paneles} Paneles {resultado.productosDetallados.panel.modelo}:</span>
                                 <span className="font-semibold">${(resultado.productosDetallados.panel.precioCompraDirecta * resultado.productosDetallados.cantidades.paneles).toLocaleString()}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>{resultado.productosDetallados.cantidades.baterias} Batería(s) {resultado.productosDetallados.bateria.modelo}:</span>
-                                <span className="font-semibold">${(resultado.productosDetallados.bateria.precioCompraDirecta * resultado.productosDetallados.cantidades.baterias).toLocaleString()}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span>Instalación y montaje:</span>
@@ -879,7 +934,7 @@ export default function CalculadoraPage() {
                                 <span className="text-purple-900">${resultado.costoEstimado.toLocaleString()}</span>
                               </div>
                               <div className="text-xs text-purple-700 mt-2">
-                                * Precios en USD sin IVA/IGTF • Plan de 4 pagos disponibles
+                                * Precios oficiales Bel Energy • Plan de 4 pagos disponibles
                               </div>
                             </div>
                           </div>

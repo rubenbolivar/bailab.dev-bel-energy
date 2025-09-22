@@ -1,17 +1,15 @@
 {
-  "tasks": {
+  "globalDependencies": ["**/.env.*local"],
+  "pipeline": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
-    "dev": {
-      "cache": false,
-      "persistent": true
-    },
     "lint": {},
-    "test": {},
-    "clean": {
+    "dev": {
       "cache": false
-    }
+    },
+    "test": {},
+    "clean": {}
   }
 }
